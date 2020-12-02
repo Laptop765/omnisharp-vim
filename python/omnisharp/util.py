@@ -162,7 +162,7 @@ def formatPathForServer(ctx, filepath):
             pattern = r'^/mnt/([a-zA-Z])/'
 
         def drive_replace(match):
-            return match.group(1).upper() + ':\\'
+            return match.group(1) + ':\\'
 
         return re.sub(pattern, drive_replace, filepath).replace('/', '\\')
     return filepath
