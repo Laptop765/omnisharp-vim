@@ -33,6 +33,7 @@ class BaseCtx(object):
         self.is_cygwin = 'cygwin' in platform.system().lower()
         self.is_wsl = ('linux' in platform.system().lower()
                        and 'microsoft' in platform.release().lower())
+        self.is_wsl = True
 
 
 class UtilCtx(BaseCtx):

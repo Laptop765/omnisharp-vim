@@ -25,6 +25,7 @@ function! s:is_cygwin() abort
 endfunction
 
 function! s:is_wsl() abort
+  return 1
   if get(s:, 'is_wsl_checked')
     return s:is_wsl_val
   endif
