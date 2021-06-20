@@ -189,6 +189,7 @@ function! OmniSharp#util#GetStartCmd(solution_file) abort
   endif
 
   if !has('win32') && !s:is_cygwin() && g:OmniSharp_server_use_mono
+    let command = insert(command, '--assembly-loader=strict')
     let command = insert(command, 'mono')
   endif
 
@@ -232,7 +233,10 @@ function! OmniSharp#util#ServerDir() abort
     let basedir = OmniSharp#util#Trim(
     \ system('cmd.exe /c echo %LocalAppData% 2>/dev/null'))
     let win_dir = join([basedir, 'omnisharp-vim', 'omnisharp-roslyn'], '\')
-    return OmniSharp#util#TranslatePathForClient(win_dir)
+    let unix_dir = OmniSharp#util#TranslatePathForClient(win_dir)
+    " Ensure the the dir is not relative, and then strip the trailing '\' added
+    " by the ':p' filename-modifier
+    return fnamemodify(unix_dir, ':p')[:-2]
   elseif exists('$XDG_CACHE_HOME')
     let basedir = expand('$XDG_CACHE_HOME')
   else
@@ -276,7 +280,8 @@ function! OmniSharp#util#TranslatePathForClient(filename) abort
   if filename =~# '\$metadata\$'
     let filename = OmniSharp#util#TempDir() . '/' . fnamemodify(filename, ':t')
   endif
-  return fnamemodify(filename, ':.')
+
+  return fnamemodify(filename, ':p')
 endfunction
 
 function! OmniSharp#util#TranslatePathForServer(filename) abort

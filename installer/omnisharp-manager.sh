@@ -63,47 +63,58 @@ else
     exit 1
 fi
 
-# Check the machine architecture
-case "$(uname -m)" in
-    "x86_64")   machine="x64";;
-    "i368")     machine="x86";;
-    *)
-        echo "Error: OmniSharp-Roslyn only works on x86 CPU architecture"
-        exit 1
-        ;;
-esac
-
-# Check the operating system
-case "$(uname -s)" in
-    "Linux")    os="linux-${machine}";;
-    "Darwin")   os="osx";;
-    *)
-        if [ "$(uname -o)" = "Cygwin" ]; then
-            os="win-${machine}"
-
-            if command -v unzip >/dev/null 2>&1 ; then
-                ext="zip"
-            else
-                echo "Error: the installer requires 'unzip' to work on Cygwin"
-                exit 1
-            fi
-        elif [ "$(uname -o)" = "Msys" ]; then
-            os="win-${machine}"
-
-            if command -v unzip >/dev/null 2>&1 ; then
-                ext="zip"
-            else
-                echo "Error: the installer requires 'unzip' to work on MinGW"
-                exit 1
-            fi
-        else
-            printf "Error: unknown system: %s\\n" "$(uname -s)"
+# If not installing in mono mode
+if [ -z "$mono" ]; then
+    # Check the machine architecture
+    case "$(uname -m)" in
+        "x86_64")   machine="x64";;
+        "i368")     machine="x86";;
+        "arm64")    machine="arm64";;
+        *)
+            echo "Error: architecture not supported"
             exit 1
-        fi
-        ;;
-esac
+            ;;
+    esac
+fi
 
-[ -n "$mono" ] && os="mono"
+if [ -n "$mono" ]; then
+    os="mono"
+else
+    case "$(uname -s)" in
+        "Linux")
+            if [ "$machine" = "arm64" ]; then
+                echo "Error: OmniSharp-Roslyn only works on x86 CPU architecture on Linux"
+                exit 1
+            fi
+            os="linux-${machine}"
+            ;;
+        "Darwin")   os="osx";;
+        *)
+            if [ "$(uname -o)" = "Cygwin" ]; then
+                os="win-${machine}"
+
+                if command -v unzip >/dev/null 2>&1 ; then
+                    ext="zip"
+                else
+                    echo "Error: the installer requires 'unzip' to work on Cygwin"
+                    exit 1
+                fi
+            elif [ "$(uname -o)" = "Msys" ]; then
+                os="win-${machine}"
+
+                if command -v unzip >/dev/null 2>&1 ; then
+                    ext="zip"
+                else
+                    echo "Error: the installer requires 'unzip' to work on MinGW"
+                    exit 1
+                fi
+            else
+                printf "Error: unknown system: %s\\n" "$(uname -s)"
+                exit 1
+            fi
+            ;;
+    esac
+fi
 
 if [ -n "$windows" ]; then
   os="win-${machine}"
